@@ -1,0 +1,8 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = GS101Pkg
+  PACKAGE_GUID                   = 0B7C1E52-6A3E-4B57-8F2A-9C1D3E5A7B02
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include

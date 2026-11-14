@@ -1,0 +1,29 @@
+#
+# Boot Shim Configs
+#
+[boot_shim]
+requires_kernel_header = true
+
+#
+# UEFI FD Configs
+#
+# The FD is copied to this address by the boot shim. It is the 20 MiB gap
+# between abl@f8800000 (+16 MiB) and the bootloader framebuffer at 0xfac00000,
+# measured from the bluejay FDT (docs/EVIDENCE.md). Not a value reported by ABL.
+#
+[uefi_fd]
+base = 0xF9800000
+size = 0x200000
+
+#
+# Android Boot Image Kernel Configs
+#
+[boot_image_kernel]
+kernel_compression = "none"
+append_dtb         = false
+
+#
+# Android Boot Image Configs
+#
+[boot_image]
+header_version = 4

@@ -1,0 +1,8 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = bluejayPkg
+  PACKAGE_GUID                   = 6E6A4C1B-3D2E-4F7A-9B8C-1A2D3E4F5A6B
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
