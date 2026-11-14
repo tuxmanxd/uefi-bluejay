@@ -58,6 +58,12 @@
   #
   PlatformUfsLib|GS101Pkg/Library/PlatformUfsLib/PlatformUfsLib.inf
 
+  #
+  # Boot manager: there is no UART on bluejay, so print bring-up state to the
+  # framebuffer console and halt instead of shutting down when nothing boots.
+  #
+  DeviceBootManagerLib|GS101Pkg/Library/DeviceBootManagerLib/DeviceBootManagerLib.inf
+
 [Components]
   #
   # Boot progress marker: paints the framebuffer from the first DXE dispatch.
