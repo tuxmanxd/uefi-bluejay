@@ -50,7 +50,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential clang lld llvm nasm uuid-dev \
-            gcc-aarch64-linux-gnu python3 python3-venv git ca-certificates
+            gcc-aarch64-linux-gnu python3 python3-venv git ca-certificates \
+            mono-devel ca-certificates-mono
 
       - name: Install edk2 python tooling
         run: |
@@ -70,6 +71,7 @@ jobs:
           CLANGPDB_AARCH64_PREFIX: aarch64-linux-gnu-
           PYTHONWARNINGS: ignore
         run: |
+          set -euo pipefail
           python3 build_uefi.py -d bluejay -r "$BUILD_MODE" -c 2>&1 | tee /tmp/build.log
 
       - name: Collect artifacts
