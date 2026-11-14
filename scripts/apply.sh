@@ -55,9 +55,17 @@ install_path "$HERE/Resources/Configs/bluejay.toml" "$MU/Resources/Configs/bluej
 # PIE image: text_offset 0, no fixed placement. Measured on bluejay, see
 # docs/EVIDENCE.md.
 SHIM="$MU/BootShim/BootShim.S"
-if [ -f "$SHIM" ] && grep -q '\.quad FD_BASE' "$SHIM"; then
-  sed -i '0,/\.quad FD_BASE/s//.quad 0/' "$SHIM"
-  echo "patched BootShim.S: text_offset = 0 (PIE boot shim)"
+if [ -f "$SHIM" ]; then
+  # GNU-only sed syntax would fail here: the CI runner's sed is BSD sed.
+  python3 - "$SHIM" <<'PY_SHIM'
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+text = path.read_text()
+if '.quad FD_BASE' in text:
+    path.write_text(text.replace('.quad FD_BASE', '.quad 0', 1))
+    print('patched BootShim.S: text_offset = 0 (PIE boot shim)')
+PY_SHIM
 fi
 
 echo "installed bluejayPkg and GS101Pkg into $MU ($MODE)"
