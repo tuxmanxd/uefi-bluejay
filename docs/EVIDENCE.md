@@ -76,3 +76,26 @@ to `UINT8`/`UINT16`), values unchanged.
 The next stage is boot device enumeration (`UfsDxe`), which decides whether
 BDS finds a boot option at all or falls through to
 `PlatformBootManagerUnableToBoot()`.
+
+## UFS, measured through the firmware
+
+Read back from this firmware's own console after `UfsDxe` ran, not from a
+datasheet or a host-side capture:
+
+| Fact | Value |
+|---|---|
+| Block I/O handles published | 53 |
+| UFS HCI `CAP` | `0x1D03FF1F` |
+| UFS HCI `VER` | `0x00000300` |
+| UFS HCI `HCS` | `0x0000010F` |
+| Largest disk block size | 4096 |
+| Largest disk last LBA | `0x1DC03F7` |
+| GPT (LBA 1) | signature valid, 27 entries |
+
+The last LBA agrees with the `userdata` extent in
+`UniXNU-bluejay/README.md` (`0x22F1E6`..`0x1DC03FA`): `0x1DC03F7` is the
+backup GPT header behind the last usable LBA.
+
+There is no `SimpleFileSystem` handle: none of the 27 partitions is FAT, so
+BDS has no removable-media boot option. Boot has to come from a driver that
+registers its own option (`UniXNUDxe`) rather than from `\EFI\BOOT\BOOTAA64.EFI`.
