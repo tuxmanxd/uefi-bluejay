@@ -16,6 +16,7 @@
 #include <Library/DebugLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 
+#include <GS101.h>
 #include <Protocol/EFIChipInfo.h>
 
 #define GS101_CHIP_ID  0x8015ULL
@@ -69,6 +70,15 @@ RegisterChipInfo (
   )
 {
   EFI_STATUS  Status;
+  UINTN       Index;
+
+  //
+  // DXE progress marker: SEC paints red, green and blue; this turns the
+  // screen magenta once driver dispatch reached this platform driver.
+  //
+  for (Index = 0; Index < (GS101_FRAMEBUFFER_SIZE / sizeof (UINT32)); Index++) {
+    ((volatile UINT32 *)(UINTN)GS101_FRAMEBUFFER_BASE)[Index] = 0x00FF00FF;
+  }
 
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &ImageHandle,

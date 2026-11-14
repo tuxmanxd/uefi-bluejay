@@ -48,6 +48,18 @@ install_path "$HERE/Platforms/Google/bluejayPkg"    "$MU/Platforms/Google/blueja
 install_path "$HERE/Silicon/Google/GS101Pkg"        "$MU/Silicon/Google/GS101Pkg"
 install_path "$HERE/Resources/Configs/bluejay.toml" "$MU/Resources/Configs/bluejay.toml"
 
+# Upstream BootShim writes its arm64 Image header with text_offset = FD_BASE,
+# i.e. it declares a fixed load address. Tensor ABL does not accept that
+# (the payload never runs and the device drops back to fastboot). BootShim is
+# position independent and copies the FD to FD_BASE itself, so build it as a
+# PIE image: text_offset 0, no fixed placement. Measured on bluejay, see
+# docs/EVIDENCE.md.
+SHIM="$MU/BootShim/BootShim.S"
+if [ -f "$SHIM" ] && grep -q '\.quad FD_BASE' "$SHIM"; then
+  sed -i '0,/\.quad FD_BASE/s//.quad 0/' "$SHIM"
+  echo "patched BootShim.S: text_offset = 0 (PIE boot shim)"
+fi
+
 echo "installed bluejayPkg and GS101Pkg into $MU ($MODE)"
 echo
 echo "Build (from $MU):"
