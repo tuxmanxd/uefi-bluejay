@@ -17,6 +17,7 @@
 
 [LibraryClasses]
   BaseLib
+  BaseMemoryLib
   DebugLib
   IoLib
   MemoryAllocationLib

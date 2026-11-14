@@ -51,6 +51,95 @@ CountHandles (
 }
 
 /**
+  Print the partition table of the largest non-logical block device.
+
+  A successful read proves the UFS driver, its DMA buffers and the partition
+  parsing all work; the printed names come from the on-disk GPT, not from
+  assumptions in this tree.
+**/
+STATIC
+VOID
+PrintPartitionTable (
+  VOID
+  )
+{
+  EFI_STATUS           Status;
+  EFI_HANDLE           *Handles;
+  UINTN                Count;
+  UINTN                Index;
+  EFI_BLOCK_IO_PROTOCOL *BlockIo;
+  EFI_BLOCK_IO_PROTOCOL *Disk;
+  UINT64                DiskLastBlock;
+  VOID                  *Buffer;
+  UINT8                 *Bytes;
+
+  Disk          = NULL;
+  DiskLastBlock = 0;
+
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiBlockIoProtocolGuid, NULL, &Count, &Handles);
+  if (EFI_ERROR (Status)) {
+    return;
+  }
+
+  for (Index = 0; Index < Count; Index++) {
+    if (EFI_ERROR (gBS->HandleProtocol (Handles[Index], &gEfiBlockIoProtocolGuid, (VOID **)&BlockIo))) {
+      continue;
+    }
+
+    if ((BlockIo->Media == NULL) || BlockIo->Media->LogicalPartition) {
+      continue;
+    }
+
+    if (BlockIo->Media->LastBlock > DiskLastBlock) {
+      DiskLastBlock = BlockIo->Media->LastBlock;
+      Disk          = BlockIo;
+    }
+  }
+
+  FreePool (Handles);
+
+  if (Disk == NULL) {
+    Print (L" no whole-disk block device\n");
+    return;
+  }
+
+  Print (L" disk block size %d, last LBA 0x%lx\n", Disk->Media->BlockSize, DiskLastBlock);
+
+  //
+  // Read LBA 1 (the GPT header) into page-aligned memory: the UFS driver hands
+  // the buffer straight to the controller.
+  //
+  Buffer = AllocatePages (1);
+  if (Buffer == NULL) {
+    return;
+  }
+
+  Status = Disk->ReadBlocks (Disk, Disk->Media->MediaId, 1, Disk->Media->BlockSize, Buffer);
+  if (EFI_ERROR (Status)) {
+    Print (L" reading LBA 1 failed: %r\n", Status);
+    FreePages (Buffer, 1);
+    return;
+  }
+
+  Bytes = (UINT8 *)Buffer;
+  if ((CompareMem (Bytes, "EFI PART", 8)) != 0) {
+    Print (L" LBA 1 has no GPT signature\n");
+    FreePages (Buffer, 1);
+    return;
+  }
+
+  //
+  // GPT header: disk GUID at 0x38, first entry LBA at 0x48, entry count at
+  // 0x50 (UEFI spec 2.10, 5.3.3).
+  //
+  Print (L" GPT present, disk GUID %g, entry count %d\n",
+         (EFI_GUID *)(Bytes + 0x38),
+         *(UINT32 *)(Bytes + 0x50));
+
+  FreePages (Buffer, 1);
+}
+
+/**
   Print the firmware status block.
 
   @param[in] Tag  Short label identifying the point in the boot flow.
@@ -84,6 +173,8 @@ PrintStatus (
          MmioRead32 (GS101_UFS_BASE + 0x00),
          MmioRead32 (GS101_UFS_BASE + 0x08),
          MmioRead32 (GS101_UFS_BASE + 0x30));
+
+  PrintPartitionTable ();
 }
 
 EFI_HANDLE
