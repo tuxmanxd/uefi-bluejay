@@ -15,12 +15,16 @@
 #include <Uefi.h>
 
 #include <Library/BaseLib.h>
+#include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/DeviceBootManagerLib.h>
 #include <Library/IoLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
+
+#include <Protocol/BlockIo.h>
+#include <Protocol/SimpleFileSystem.h>
 
 #include <GS101.h>
 
