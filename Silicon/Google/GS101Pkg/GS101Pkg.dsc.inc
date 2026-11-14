@@ -60,6 +60,11 @@
 
 [Components]
   #
+  # Boot progress marker: paints the framebuffer from the first DXE dispatch.
+  #
+  GS101Pkg/Drivers/GS101ProgressDxe/GS101ProgressDxe.inf
+
+  #
   # Chip info: UfsDxe locates gEfiChipInfoProtocolGuid and reads GetRevision.
   # UfsDxe itself is declared by SamsungPkg.dsc.inc above.
   #

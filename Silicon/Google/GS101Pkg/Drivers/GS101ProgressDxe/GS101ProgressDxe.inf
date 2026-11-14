@@ -1,0 +1,21 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = GS101ProgressDxe
+  FILE_GUID                      = 3C1B7F52-6D4E-4B9A-A1C8-5E2F0D9A7B31
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Gs101ProgressEntry
+
+[Sources]
+  Progress.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  GS101Pkg/GS101Pkg.dec
+
+[LibraryClasses]
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+
+[Depex]
+  TRUE
