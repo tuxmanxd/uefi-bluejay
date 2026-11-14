@@ -60,6 +60,13 @@
 #define GS101_DECON_TRIG_EN            0x00003061U
 
 //
+// Bootloader framebuffer handed over through the FDT: 1080x2400, 32 bpp,
+// 4320 bytes per line. Used by the SEC progress colours and by the console.
+//
+#define GS101_FRAMEBUFFER_BASE         0xFAC00000U
+#define GS101_FRAMEBUFFER_SIZE         0x009E3400U
+
+//
 // GIC and UART (documented for the memory map; the UEFI console uses the
 // bootloader framebuffer, not the UART).
 //

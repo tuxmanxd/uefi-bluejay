@@ -24,6 +24,32 @@
 #define WTCON_RSTEN   (1U << 0)
 #define WTCON_STOP    (WTCON_ENABLE | WTCON_RSTEN)
 
+/**
+  Fill the bootloader framebuffer with a single colour.
+
+  This is the only feedback channel available on bluejay: there is no
+  reachable UART, and the platform's debug output is not wired to the
+  display. Each SEC stage paints a distinct colour so the on-screen state
+  identifies the last stage that ran.
+**/
+STATIC
+VOID
+Gs101PaintFramebuffer (
+  IN UINT32  Colour
+  )
+{
+  volatile UINT32  *Framebuffer;
+  UINTN            Index;
+  UINTN            Count;
+
+  Framebuffer = (volatile UINT32 *)(UINTN)GS101_FRAMEBUFFER_BASE;
+  Count       = GS101_FRAMEBUFFER_SIZE / sizeof (UINT32);
+
+  for (Index = 0; Index < Count; Index++) {
+    Framebuffer[Index] = Colour;
+  }
+}
+
 STATIC
 VOID
 Gs101StopWatchdog (
@@ -80,7 +106,13 @@ PlatformInitialize (
   VOID
   )
 {
+  // Stage A: framebuffer is writable (red)
+  Gs101PaintFramebuffer (0x00FF0000);
+  Gs101RearmDeconTrigger ();
+  // Stage B: DECON0 trigger re-armed (green)
+  Gs101PaintFramebuffer (0x0000FF00);
   Gs101StopWatchdog ("Watchdog CL0");
   Gs101StopWatchdog ("Watchdog CL1");
-  Gs101RearmDeconTrigger ();
+  // Stage C: both cluster watchdogs cleared (blue)
+  Gs101PaintFramebuffer (0x000000FF);
 }
