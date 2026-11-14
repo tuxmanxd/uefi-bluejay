@@ -62,6 +62,11 @@
   #
   MemoryMapLib|bluejayPkg/Library/MemoryMapLib/MemoryMapLib.inf
 
+  #
+  # SEC progress: paints the framebuffer once InitializeMemory() has returned.
+  #
+  PlatformPeiLib|GS101Pkg/Library/PlatformPeiLib/PlatformPeiLib.inf
+
 !if $(UNIXNU_PAYLOAD) == 1
   #
   # UniXNU Libraries
