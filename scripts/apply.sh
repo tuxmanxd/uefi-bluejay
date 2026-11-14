@@ -51,8 +51,8 @@ install_path "$HERE/Resources/Configs/bluejay.toml" "$MU/Resources/Configs/bluej
 echo "installed bluejayPkg and GS101Pkg into $MU ($MODE)"
 echo
 echo "Build (from $MU):"
-echo "  python3 build_uefi.py -d bluejay --edk2 Mu_Basecore"
+echo "  python3 build_uefi.py -d bluejay -r RELEASE"
 echo
 echo "Output:"
 echo "  Build/bluejayPkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd"
-echo "  Mu-bluejay-0.img"
+echo "  Mu-bluejay.img"

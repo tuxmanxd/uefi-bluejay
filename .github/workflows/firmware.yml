@@ -1,0 +1,115 @@
+name: Build GS101 firmware
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "Platforms/**"
+      - "Silicon/**"
+      - "Resources/**"
+      - "scripts/**"
+      - ".github/workflows/firmware.yml"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Build mode"
+        type: choice
+        options: [RELEASE, DEBUG]
+        default: RELEASE
+
+permissions:
+  contents: read
+
+env:
+  MU_REPO: Project-Silicium/Mu-Silicium
+  MU_REF: main
+  BUILD_MODE: ${{ inputs.mode || 'RELEASE' }}
+
+jobs:
+  firmware:
+    name: bluejay UEFI (ubuntu-24.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout platform overlay
+        uses: actions/checkout@v4
+        with:
+          path: uefi
+
+      - name: Checkout Mu-Silicium
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.MU_REPO }}
+          ref: ${{ env.MU_REF }}
+          path: mu
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Install host packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential clang lld llvm nasm uuid-dev \
+            gcc-aarch64-linux-gnu python3 python3-venv git ca-certificates
+
+      - name: Install edk2 python tooling
+        run: |
+          python3 -m venv "$HOME/venv"
+          "$HOME/venv/bin/pip" install --upgrade pip
+          "$HOME/venv/bin/pip" install -r mu/pip-requirements.txt
+          echo "$HOME/venv/bin" >> "$GITHUB_PATH"
+
+      - name: Install overlay into Mu-Silicium
+        run: |
+          uefi/scripts/apply.sh mu copy
+          git -C mu status --short | head -20
+
+      - name: Build firmware
+        working-directory: mu
+        env:
+          CLANGPDB_AARCH64_PREFIX: aarch64-linux-gnu-
+          PYTHONWARNINGS: ignore
+        run: |
+          python3 build_uefi.py -d bluejay -r "$BUILD_MODE" -c 2>&1 | tee /tmp/build.log
+
+      - name: Collect artifacts
+        id: collect
+        run: |
+          set -e
+          mkdir -p out
+          fd="mu/Build/bluejayPkg/${BUILD_MODE}_CLANGPDB/FV/SILICIUM_UEFI.fd"
+          test -f "$fd"
+          cp "$fd" out/
+          cp mu/BootShim/BootShim.bin out/BootShim.bin
+          for img in mu/Mu-bluejay*.img; do
+            [ -f "$img" ] && cp "$img" out/
+          done
+          ls -l out
+          {
+            echo "### GS101 bluejay firmware"
+            echo
+            echo "| file | bytes |"
+            echo "| --- | --- |"
+            for f in out/*; do
+              echo "| \`$(basename "$f")\` | $(stat -c %s "$f") |"
+            done
+            sha256sum out/* | sed 's/^/    /'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: gs101-bluejay-${{ env.BUILD_MODE }}
+          path: out/*
+          if-no-files-found: error
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gs101-bluejay-${{ env.BUILD_MODE }}-log
+          path: |
+            /tmp/build.log
+            mu/Build/bluejayPkg/**/BUILD_REPORT.TXT
+            mu/Build/bluejayPkg/**/*.log
+          if-no-files-found: ignore
