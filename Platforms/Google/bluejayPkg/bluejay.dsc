@@ -16,6 +16,14 @@
   FLASH_DEFINITION               = bluejayPkg/bluejay.fdf
   USE_CUSTOM_DISPLAY_DRIVER      = 0
 
+  #
+  # UniXNU firmware: 0 builds a plain Mu-Silicium UEFI tree on its own,
+  # 1 adds UniXNU, UniXNUDxe, UniXNURamDiskDxe and DarwinBoot. The UniXNU
+  # release sets it in board.toml [firmware.defines] and adds the UniXNU
+  # package paths to PACKAGES_PATH.
+  #
+  UNIXNU_PAYLOAD                 = 0
+
 !include GS101Pkg/GS101Pkg.dsc.inc
 
 [PcdsFixedAtBuild]
@@ -53,3 +61,22 @@
   # Memory Libraries
   #
   MemoryMapLib|bluejayPkg/Library/MemoryMapLib/MemoryMapLib.inf
+
+!if $(UNIXNU_PAYLOAD) == 1
+  #
+  # UniXNU Libraries
+  #
+  UniXNULib|UniXNUPkg/Library/UniXNULib/UniXNULib.inf
+!endif
+
+[Components]
+!if $(UNIXNU_PAYLOAD) == 1
+  #
+  # UniXNU: boot menu, boot option registration, FDT initrd block device and
+  # the XNU loader. HobLib and FdtLib come from SiliciumPkg.dsc.inc.
+  #
+  UniXNUPkg/Application/UniXNU/UniXNU.inf
+  UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
+  UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
+  DarwinBootPkg/Driver/DarwinBoot.inf
+!endif

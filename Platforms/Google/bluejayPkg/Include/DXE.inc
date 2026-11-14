@@ -30,6 +30,13 @@
   INF GS101Pkg/Drivers/GS101ChipInfoDxe/GS101ChipInfoDxe.inf
   INF SamsungPkg/Drivers/UfsDxe/UfsDxe.inf
 
+!if $(UNIXNU_PAYLOAD) == 1
+  # UniXNU: the bootloader FDT initrd as a read-only block device, and the
+  # XNU loader. Both are only present in a UNIXNU_PAYLOAD=1 build.
+  INF UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
+  INF DarwinBootPkg/Driver/DarwinBoot.inf
+!endif
+
 !if $(USE_CUSTOM_DISPLAY_DRIVER) == 0
   INF SiliciumPkg/Drivers/SimpleFbDxe/SimpleFbDxe.inf
 !endif

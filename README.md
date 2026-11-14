@@ -32,6 +32,7 @@ GS101 only supplies the board addresses and the PHY/UniPro calibration hooks.
 | GS101 PHY pre-init, post-link, HS-G4 Series B | transcribed from pixelios, not run on hardware |
 | Watchdog stop, DECON trigger re-arm | transcribed from pixelios, not run on hardware |
 | Framebuffer console (1080x2400) | expected to work (ABL display left running) |
+| UniXNU modules (UniXNU, UniXNUDxe, UniXNURamDiskDxe, DarwinBoot) | wired behind `UNIXNU_PAYLOAD=1`, not built |
 | Buttons / keypad | not implemented |
 | USB device/host, PMIC, touch | not implemented |
 | Build verified against a Mu-Silicium tree | no (no EDK2 toolchain in this environment) |
@@ -63,6 +64,22 @@ Outputs:
 
 `build_uefi.py` also needs its `Binaries`, `Common/Mu`, `Common/Mu_OEM_Sample`,
 `Mu_Basecore`, `Silicium-ACPI` and OpenSSL submodules initialised.
+
+## UniXNU firmware
+
+With `-D UNIXNU_PAYLOAD=1` (the UniXNU device repository sets it in
+`board.toml [firmware.defines]`) the DSC and FDF also add `UniXNU.inf`,
+`UniXNUDxe.inf`, `UniXNURamDiskDxe.inf` and `DarwinBoot.inf`, and
+`PACKAGES_PATH` gains `{tree}/package` and `{tree}/drivers/DarwinBoot`. The
+default `UNIXNU_PAYLOAD=0` keeps the tree buildable on its own. UniXNU builds
+it with:
+
+```sh
+./unixnu build firmware --uefi /path/to/Mu-Silicium --edk2 /path/to/Mu_Basecore
+```
+
+`HobLib` (`DxeHobLib`) and `FdtLib` (`BaseFdtLib`) come from
+`SiliciumPkg.dsc.inc`.
 
 ## Flash
 
