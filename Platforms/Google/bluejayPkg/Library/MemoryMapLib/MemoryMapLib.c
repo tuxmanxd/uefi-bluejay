@@ -28,7 +28,11 @@ gMemoryDescriptor[] = {
   {"UEFI FD",            0xF9800000, 0x00200000, AddMem, SYS_MEM, SYS_MEM_CAP, BsData, WRITE_BACK},
   {"UEFI Stack",         0xF9A00000, 0x00040000, AddMem, SYS_MEM, SYS_MEM_CAP, BsData, WRITE_BACK},
   {"DXE Heap",           0xFB600000, 0x01DF0000, AddMem, SYS_MEM, SYS_MEM_CAP, Conv,   WRITE_BACK},
-  {"Display Reserved",   0xFAC00000, 0x009E3400, AddMem, MEM_RES, SYS_MEM_CAP, Reserv, WRITE_THROUGH},
+  // The panel is 1080x2400x32bpp = 0x009E3400 bytes, which is not a multiple
+  // of the 4 KB translation granule. ArmConfigureMmu() rejects a region that
+  // is not page aligned, so the reservation is rounded up to 0x009E4000; the
+  // extra page is still inside the hole before the DXE heap at 0xFB600000.
+  {"Display Reserved",   0xFAC00000, 0x009E4000, AddMem, MEM_RES, SYS_MEM_CAP, Reserv, WRITE_THROUGH},
 
   // Register Regions
   {"GICD",               0x10400000, 0x00010000, AddDev, MMAP_IO, UNCACHEABLE, MmIO,   NS_DEVICE},

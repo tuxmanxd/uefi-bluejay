@@ -31,6 +31,7 @@ to `UINT8`/`UINT16`), values unchanged.
 | Low RAM bank | `0x80000000` + 2 GiB | measured FDT `memory@80000000` |
 | `abl` reservation | `0xF8800000` + `0x1000000` | measured FDT `reserved-memory` |
 | Framebuffer | `0xFAC00000` + `0x9E3400` (1080x2400, stride 4320, a8r8g8b8) | measured FDT / display handoff |
+| Framebuffer map entry | reserved as `0x009E4000` (rounded up) | `UpdateRegionMapping()` in `UefiCpuPkg/Library/ArmMmuLib/AArch64/ArmMmuLibCore.c` returns `EFI_INVALID_PARAMETER` when a region is not 4 KiB aligned; symptom on hardware: `MemoryPeim()` fails, SEC returns, screen stays on the last SEC colour |
 | Boot shim load placement | arm64 `text_offset` must be 0 | measured: with `text_offset = FD_BASE` ABL drops straight back to fastboot; with `text_offset = 0` (PIE) the payload runs |
 | `dss_log_reserved` | `0xFD3F0000` + `0xE000` | measured FDT |
 | `ramoops_mem` | `0xFD3FF000` + `0x400000` | measured FDT |
