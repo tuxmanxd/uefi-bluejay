@@ -60,3 +60,19 @@ to `UINT8`/`UINT16`), values unchanged.
 - The FD base (`0xF9800000`), stack (`0xF9A00000`) and DXE heap (`0xFB600000`)
   are addresses chosen inside measured free holes, not addresses reported by
   ABL. See `docs/PLAN.md`.
+
+## Bring-up milestones measured on bluejay
+
+| Milestone | Colour / screen | Meaning |
+|---|---|---|
+| Framebuffer writable | red | `0xFAC00000`, stride 4320 is correct under `fastboot boot` |
+| DECON0 trigger re-armed | green | direct writes reach the panel |
+| Cluster watchdogs cleared | blue | SEC C code ran to completion |
+| `MemoryPeim()` + MMU | yellow | `InitializeMemory()` returned success |
+| First DXE dispatch | orange | `DxeCore` is dispatching drivers |
+| Platform driver entry | magenta | `GS101ChipInfoDxe` ran |
+| BDS after-console | Project Silicium boot logo | DXE core, console and `BdsDxe` all work |
+
+The next stage is boot device enumeration (`UfsDxe`), which decides whether
+BDS finds a boot option at all or falls through to
+`PlatformBootManagerUnableToBoot()`.
