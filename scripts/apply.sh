@@ -90,7 +90,8 @@ PAYLOAD = """
   b.hi  _PayloadDone
   mov   w9, #512
   mul   w6, w9, w7
-  ldr   x5, =0x880000000
+  movz  x5, #0x8000, lsl #16
+  movk  x5, #0x8, lsl #32
 _PayloadCopy:
   ldp   x2, x3, [x4], #16
   stp   x2, x3, [x5], #16
