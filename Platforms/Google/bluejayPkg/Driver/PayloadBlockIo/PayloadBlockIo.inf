@@ -18,6 +18,10 @@
 [Packages]
   MdePkg/MdePkg.dec
 
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gEfiDevicePathProtocolGuid
+
 [LibraryClasses]
   UefiDriverEntryPoint
   UefiBootServicesTableLib
