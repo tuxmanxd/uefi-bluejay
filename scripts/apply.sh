@@ -54,6 +54,11 @@ install_path "$HERE/Resources/Configs/bluejay.toml" "$MU/Resources/Configs/bluej
 # position independent and copies the FD to FD_BASE itself, so build it as a
 # PIE image: text_offset 0, no fixed placement. Measured on bluejay, see
 # docs/EVIDENCE.md.
+#
+# The header is also emitted when REQUIRES_KERNEL_HEADER=0. UniXNU compiles the
+# shim that way because its own check expects text_offset to equal FD_BASE,
+# which bluejay cannot satisfy; keeping the header gives ABL the layout it
+# already accepted on this phone.
 SHIM="$MU/BootShim/BootShim.S"
 if [ -f "$SHIM" ]; then
   # GNU-only sed syntax would fail here: the CI runner's sed is BSD sed.
@@ -62,9 +67,12 @@ import sys
 from pathlib import Path
 path = Path(sys.argv[1])
 text = path.read_text()
-if '.quad FD_BASE' in text:
-    path.write_text(text.replace('.quad FD_BASE', '.quad 0', 1))
-    print('patched BootShim.S: text_offset = 0 (PIE boot shim)')
+original = text
+text = text.replace('#if REQUIRES_KERNEL_HEADER == 1', '#if 1', 1)
+text = text.replace('.quad FD_BASE', '.quad 0', 1)
+if text != original:
+    path.write_text(text)
+    print('patched BootShim.S: arm64 header always present, text_offset = 0')
 PY_SHIM
 fi
 

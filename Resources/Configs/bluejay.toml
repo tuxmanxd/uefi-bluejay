@@ -2,7 +2,12 @@
 # Boot Shim Configs
 #
 [boot_shim]
-requires_kernel_header = true
+# UniXNU's pack stage checks that the shim's arm64 header names FD_BASE as
+# text_offset. Tensor ABL rejects a nonzero text_offset (docs/EVIDENCE.md), so
+# bluejay cannot satisfy that check; the shim is position independent and copies
+# the FD itself. apply.sh still emits the header, with text_offset 0, which is
+# what the firmware-only image already booted with.
+requires_kernel_header = false
 
 #
 # UEFI FD Configs
