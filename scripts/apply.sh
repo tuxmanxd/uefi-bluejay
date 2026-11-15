@@ -107,9 +107,10 @@ original = text
 text = text.replace('#if REQUIRES_KERNEL_HEADER == 1', '#if 1', 1)
 text = text.replace('.quad FD_BASE', '.quad 0', 1)
 anchor = '  b.ne  _CopyLoop\n  ldr   x5, =FD_BASE\n'
-if anchor not in text:
-    sys.exit('apply.sh: BootShim.S copy loop changed; payload copy not installed')
-text = text.replace(anchor, '  b.ne  _CopyLoop\n' + PAYLOAD, 1)
+if '_PayloadCopy:' not in text:
+    if anchor not in text:
+        sys.exit('apply.sh: BootShim.S copy loop changed; payload copy not installed')
+    text = text.replace(anchor, '  b.ne  _CopyLoop\n' + PAYLOAD, 1)
 if text != original:
     path.write_text(text)
     print('patched BootShim.S: arm64 header always present, text_offset = 0, payload copy installed')
