@@ -17,6 +17,13 @@
   USE_CUSTOM_DISPLAY_DRIVER      = 0
 
   #
+  # SiliciumPkg.dsc.inc passes -D ENABLE_SECUREBOOT=$(ENABLE_SECUREBOOT) to the
+  # compiler, so the variable must exist even when the build is driven directly
+  # (UniXNU calls BaseTools' build, not build_uefi.py, which sets it).
+  #
+  ENABLE_SECUREBOOT              = 0
+
+  #
   # UniXNU firmware: 0 builds a plain Mu-Silicium UEFI tree on its own,
   # 1 adds UniXNU, UniXNUDxe, UniXNURamDiskDxe and DarwinBoot. The UniXNU
   # release sets it in board.toml [firmware.defines] and adds the UniXNU
