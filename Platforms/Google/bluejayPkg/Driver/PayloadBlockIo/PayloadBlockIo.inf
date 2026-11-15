@@ -23,3 +23,6 @@
   UefiBootServicesTableLib
   BaseMemoryLib
   DebugLib
+
+[Depex]
+  TRUE
