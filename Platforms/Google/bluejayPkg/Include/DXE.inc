@@ -32,8 +32,10 @@
   INF SamsungPkg/Drivers/UfsDxe/UfsDxe.inf
 
 !if $(UNIXNU_PAYLOAD) == 1
-  # UniXNU: the bootloader FDT initrd as a read-only block device, and the
-  # XNU loader. Both are only present in a UNIXNU_PAYLOAD=1 build.
+  # UniXNU: the payload volume BootShim copies into the reserved window, the
+  # bootloader FDT initrd, and the XNU loader. All are only present in a
+  # UNIXNU_PAYLOAD=1 build.
+  INF bluejayPkg/Driver/PayloadBlockIo/PayloadBlockIo.inf
   INF UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
   INF DarwinBootPkg/Driver/DarwinBoot.inf
 !endif

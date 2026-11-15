@@ -65,14 +65,54 @@ if [ -f "$SHIM" ]; then
   python3 - "$SHIM" <<'PY_SHIM'
 import sys
 from pathlib import Path
+
+PAYLOAD = """
+#if REQUIRES_KERNEL_HEADER == 0
+  //
+  // The Kernel field of a UniXNU image continues with the payload volume:
+  // one 4 KiB FDT envelope (the pack stage writes it as [bootimg] dtb) and
+  // then the FAT volume. The shim copies the volume to its reserved window so
+  // the firmware can publish it as a block device. The size comes from the
+  // BPB: bytes/sector at 0x0B and total sectors at 0x20 (FAT32), no new
+  // defines, so the firmware-only build (REQUIRES_KERNEL_HEADER == 1) is
+  // byte-identical to before.
+  //
+  add   x4, x4, #0x1000
+  ldr   x6, [x4, #8]
+  lsr   x6, x6, #24
+  and   x6, x6, #0xFFFF
+  cmp   x6, #512
+  b.ne  _PayloadDone
+  ldr   w7, [x4, #0x20]
+  cbz   w7, _PayloadDone
+  mov   w8, #0x20000
+  cmp   w7, w8
+  b.hi  _PayloadDone
+  mov   w9, #512
+  mul   w6, w9, w7
+  ldr   x5, =0x880000000
+_PayloadCopy:
+  ldp   x2, x3, [x4], #16
+  stp   x2, x3, [x5], #16
+  subs  w6, w6, #16
+  b.ne  _PayloadCopy
+_PayloadDone:
+#endif
+  ldr   x5, =FD_BASE
+"""
+
 path = Path(sys.argv[1])
 text = path.read_text()
 original = text
 text = text.replace('#if REQUIRES_KERNEL_HEADER == 1', '#if 1', 1)
 text = text.replace('.quad FD_BASE', '.quad 0', 1)
+anchor = '  b.ne  _CopyLoop\n  ldr   x5, =FD_BASE\n'
+if anchor not in text:
+    sys.exit('apply.sh: BootShim.S copy loop changed; payload copy not installed')
+text = text.replace(anchor, '  b.ne  _CopyLoop\n' + PAYLOAD, 1)
 if text != original:
     path.write_text(text)
-    print('patched BootShim.S: arm64 header always present, text_offset = 0')
+    print('patched BootShim.S: arm64 header always present, text_offset = 0, payload copy installed')
 PY_SHIM
 fi
 

@@ -17,6 +17,14 @@ the framebuffer and the logging reservations. Both are **planned**, not
 observed allocations. If ABL still owns either range on a real device, the
 first boot will fail before the framebuffer appears.
 
+The upper 4 GiB (measured, see EVIDENCE.md) is mapped as conventional memory
+from `0x884000000` to `0x980000000`. Its first 64 MiB, `0x880000000` +
+`0x04000000`, is the **payload window**: `BootShim` copies the UniXNU payload
+volume there from the boot image kernel field (Tensor ABL caps the ramdisk at
+32 MiB, the kernel is 49.5 MiB), `PayloadBlockIo` publishes it as a read-only
+`BlockIo`, and `FatDxe` mounts it. The window is reserved in the UEFI memory
+map and excluded from XNU's memory node, which starts at `0x884000000`.
+
 Fallback if `0xF9800000` is not writable: move the FD and stack into the
 0xFB600000 hole and shrink the DXE heap, or grow the FD into a larger hole and
 adjust `Resources/Configs/bluejay.toml` and `MemoryMapLib.c` together.

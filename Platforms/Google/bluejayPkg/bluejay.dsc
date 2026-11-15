@@ -84,9 +84,11 @@
 [Components]
 !if $(UNIXNU_PAYLOAD) == 1
   #
-  # UniXNU: boot menu, boot option registration, FDT initrd block device and
-  # the XNU loader. HobLib and FdtLib come from SiliciumPkg.dsc.inc.
+  # UniXNU: payload volume block device, boot menu, boot option registration,
+  # FDT initrd block device and the XNU loader. HobLib and FdtLib come from
+  # SiliciumPkg.dsc.inc.
   #
+  bluejayPkg/Driver/PayloadBlockIo/PayloadBlockIo.inf
   UniXNUPkg/Application/UniXNU/UniXNU.inf
   UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
   UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf

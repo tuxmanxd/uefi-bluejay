@@ -37,6 +37,16 @@ to `UINT8`/`UINT16`), values unchanged.
 | `ramoops_mem` | `0xFD3FF000` + `0x400000` | measured FDT |
 | `bldr_log` | `0xFD800000` + `0x100000` | measured FDT |
 | Low-bank carve-outs (not mapped) | `sec_pt`, `sec_dram`, `tpu_fw`, `gsa`, `aoc`, `xhci_dma`, modem `cp_rmem*` | measured FDT |
+| High RAM banks | `0x880000000` + 2 GiB and `0x900000000` + 2 GiB, contiguous, no reservation inside | measured FDT (pixelios `device/google/bluejay/board.json`: `dram_banks` "MEASURED on the phone", `/memory` banks) |
+
+## Tensor ABL boot image handling
+
+| Fact | Value | Source |
+|---|---|---|
+| Ramdisk cap | 32 MiB; 4 and 32 MiB boot, 36/40/42/44/46/48/54/56/194 MiB are refused, header v0 and v4 alike, and 36 MiB at `ramdisk_offset 0x200000` is refused too | measured on the phone, 2026-11-15 |
+| Kernel field | accepts at least a 58,723,114-byte field (56 MiB, shim + FD + padding) with no ramdisk | measured on the phone, 2026-11-15 |
+| Appended bytes after the FD | not parsed: a 54 MiB field of `0xAA` after the FD boots the firmware | measured on the phone, 2026-11-15 |
+| `fastboot fetch` | only `userdata` is allowed (`Fetching restricted partition: boot_b is not allowed`) | measured `fastboot fetch boot_b` |
 
 ## Platform
 
